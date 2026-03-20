@@ -44,9 +44,9 @@ Bilingual (Hindi + English) promotional website for Bihar Diwas.
 - Festive landing page with Bihar-themed colors (saffron, green, Jio blue)
 - WhatsApp share button with pre-filled message + referral link (?ref=NUMBER)
 - Frontend share counter (localStorage) — tracks 3 unique shares
-- After 3 shares: mobile number claim form → saved to PostgreSQL
+- After 3 shares: mobile number claim form → saved in-memory (no DB needed)
 - Referral flow: visitors arriving via ?ref= link see same sharing prompt
-- Admin page at /admin — password-protected via ADMIN_PASSWORD secret
+- Admin page at /admin — password-protected via ADMIN_PASSWORD env var
 - Admin table with all submitted numbers, timestamps, referrer info
 - "Copy All Numbers" button for easy export
 
@@ -55,11 +55,19 @@ Bilingual (Hindi + English) promotional website for Bihar Diwas.
 - `POST /api/admin/verify` — Verify admin password
 - `GET /api/admin/recharge-requests?password=xxx` — List all submissions (admin only)
 
-### Database Schema
-- `recharge_requests` table: id, mobile_number (unique), referred_by, submitted_at
+### Data Storage
+- In-memory store (`artifacts/api-server/src/store.ts`) — no database required
+- Data resets on server restart (by design — no external DB dependency)
 
-### Secrets
+### Secrets / Env Vars
 - `ADMIN_PASSWORD` — password for the /admin page
+
+### Render Deployment
+- `render.yaml` at repo root configures the Render service
+- Build command: `pnpm install && BASE_PATH=/ pnpm --filter @workspace/bihar-diwas run build && pnpm --filter @workspace/api-server run build`
+- Start command: `node artifacts/api-server/dist/index.cjs`
+- The Express server serves both the API (`/api/*`) and the built React frontend (SPA fallback)
+- Set `ADMIN_PASSWORD` as an environment variable in Render dashboard
 
 ## TypeScript & Composite Projects
 

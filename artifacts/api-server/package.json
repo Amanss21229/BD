@@ -6,15 +6,14 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx ./src/index.ts",
     "build": "tsx ./build.ts",
+    "start": "node ./dist/index.cjs",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@workspace/db": "workspace:*",
     "@workspace/api-zod": "workspace:*",
-    "drizzle-orm": "catalog:",
+    "cors": "^2",
     "express": "^5",
     "cookie-parser": "^1.4.7",
-    "cors": "^2",
     "pino": "^9",
     "pino-http": "^10"
   },
