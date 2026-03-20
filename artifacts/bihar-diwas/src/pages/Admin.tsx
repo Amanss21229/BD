@@ -30,7 +30,8 @@ export default function Admin() {
 
   const { data, isLoading, refetch } = useAdminGetRechargeRequests(
     { password: token || "" },
-    { query: { enabled: !!token, retry: false } }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    { query: { enabled: !!token, retry: false } as any }
   );
 
   const handleLogin = (e: React.FormEvent) => {

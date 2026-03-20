@@ -4,7 +4,7 @@ services:
     runtime: node
     region: singapore
     plan: free
-    buildCommand: "npm install -g pnpm && pnpm install --frozen-lockfile && BASE_PATH=/ pnpm --filter @workspace/bihar-diwas run build && pnpm --filter @workspace/api-server run build"
+    buildCommand: "npm install -g pnpm@10 && pnpm install --frozen-lockfile && pnpm run build"
     startCommand: "node artifacts/api-server/dist/index.cjs"
     envVars:
       - key: NODE_ENV
