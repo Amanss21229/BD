@@ -1,15 +1,18 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Jio Bihar Diwas API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: recharge
+    description: Recharge request operations
+  - name: admin
+    description: Admin operations
 paths:
   /healthz:
     get:
@@ -24,6 +27,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /recharge-requests:
+    post:
+      operationId: submitRechargeRequest
+      tags: [recharge]
+      summary: Submit recharge request
+      description: Submit a mobile number for the ₹349 free recharge offer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RechargeRequestInput"
+      responses:
+        "201":
+          description: Request submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RechargeRequestResult"
+        "400":
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Number already submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/verify:
+    post:
+      operationId: adminVerify
+      tags: [admin]
+      summary: Verify admin password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminVerifyInput"
+      responses:
+        "200":
+          description: Password correct
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminVerifyResult"
+        "401":
+          description: Incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/recharge-requests:
+    get:
+      operationId: adminGetRechargeRequests
+      tags: [admin]
+      summary: Get all recharge requests (admin only)
+      parameters:
+        - in: query
+          name: password
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of all recharge requests
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminRechargeRequestList"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +120,90 @@ components:
       required:
         - status
 
+    RechargeRequestInput:
+      type: object
+      properties:
+        mobileNumber:
+          type: string
+          description: 10-digit mobile number
+        referredBy:
+          type: string
+          description: Referral code or referrer mobile number (optional)
+      required:
+        - mobileNumber
+
+    RechargeRequestResult:
+      type: object
+      properties:
+        id:
+          type: integer
+        mobileNumber:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+      required:
+        - id
+        - mobileNumber
+        - submittedAt
+        - message
+
+    AdminVerifyInput:
+      type: object
+      properties:
+        password:
+          type: string
+      required:
+        - password
+
+    AdminVerifyResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+      required:
+        - success
+        - token
+
+    AdminRechargeRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+        mobileNumber:
+          type: string
+        referredBy:
+          type: string
+          nullable: true
+        submittedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - mobileNumber
+        - submittedAt
+
+    AdminRechargeRequestList:
+      type: object
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminRechargeRequest"
+        total:
+          type: integer
+      required:
+        - requests
+        - total
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error

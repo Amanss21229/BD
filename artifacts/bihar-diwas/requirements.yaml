@@ -1,0 +1,15 @@
+packages:
+  "framer-motion": "For smooth reveal animations and progress bars"
+  "canvas-confetti": "For celebration effect upon successful recharge claim"
+  "@types/canvas-confetti": "Types for canvas-confetti"
+  "clsx": "Utility for conditional class joining"
+  "tailwind-merge": "Utility for merging tailwind classes safely"
+
+images:
+  - path: "artifacts/bihar-diwas/public/images/festive-bg.png"
+    description: "Elegant Indian festive background with saffron and green abstract waves, subtle golden mandala patterns, soft glowing lighting, clean and premium"
+    aspect_ratio: "16:9"
+
+notes:
+  - React Query hooks are imported from @workspace/api-client-react
+  - wouter is used for routing
