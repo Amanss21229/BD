@@ -69,7 +69,7 @@ export default function Home() {
 
   const handleShare = () => {
     const siteUrl = `${window.location.origin}${window.location.pathname}?ref=${mobileNumber || 'diwas_offer'}`;
-    const text = `🎉 Happy Bihar Diwas! 🎉\n\nइस संदेश को WhatsApp पर 3 अलग-अलग दोस्तों के साथ साझा करें और ₹349 का फ्री Jio मोबाइल रिचार्ज पाएं! यह ऑफ़र केवल बिहार के उपयोगकर्ताओं के लिए है, विशेषकर कंकड़बाग क्षेत्र।\n\nClaim here: ${siteUrl}`;
+    const text = `🎉 Happy Bihar Diwas! 🎉\n\nइस संदेश को WhatsApp पर 3 अलग-अलग दोस्तों के साथ साझा करें और ₹349 का फ्री Jio मोबाइल रिचार्ज पाएं! यह ऑफ़र केवल भारत के उपयोगकर्ताओं के लिए है, विशेषकर जियो यूज़र्स।\n\nClaim here: ${siteUrl}`;
     
     const waUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
     window.open(waUrl, "_blank");
@@ -155,11 +155,11 @@ export default function Home() {
                   <h3 className="text-2xl font-bold text-foreground mb-4">Request Successful!</h3>
                   <div className="space-y-4 text-muted-foreground bg-gray-50 rounded-2xl p-6 border border-gray-100">
                     <p className="font-medium text-gray-900">
-                      Thank you! Your ₹349 recharge will be activated within 24 hours.
+                      Thank you! If Your Referral are real and genuine, Your ₹349 recharge will be activated within 24 hours.
                     </p>
                     <div className="h-px w-16 bg-gray-200 mx-auto" />
                     <p className="text-sm font-medium">
-                      धन्यवाद! आपका ₹349 का रिचार्ज 24 घंटे के भीतर सक्रिय कर दिया जाएगा।
+                      धन्यवाद!अगर आपका रेफरल (Referral) असली और जेन्युइन (Real & Genuine) होगा, तो आपका ₹349 का रिचार्ज 24 घंटे के भीतर सक्रिय कर दिया जाएगा।
                     </p>
                   </div>
                 </motion.div>
@@ -177,7 +177,7 @@ export default function Home() {
                       <p className="font-bold text-gray-900 leading-tight">
                         Share with 3 unique friends on WhatsApp and get <span className="text-secondary text-lg">₹349</span> free recharge!
                       </p>
-                      <p className="text-sm text-gray-600 mt-1">Only for Bihar users, especially Kankarbagh.</p>
+                      <p className="text-sm text-gray-600 mt-1">Only for Indian users, especially Jio Users.</p>
                     </div>
                   </div>
                   
@@ -185,7 +185,7 @@ export default function Home() {
                     <p className="font-semibold text-green-900 leading-tight mb-1">
                       इस संदेश को WhatsApp पर 3 अलग-अलग दोस्तों के साथ साझा करें और ₹349 का फ्री मोबाइल रिचार्ज पाएं!
                     </p>
-                    <p className="text-green-800">यह ऑफ़र केवल बिहार के उपयोगकर्ताओं के लिए है, विशेषकर कंकड़बाग क्षेत्र।</p>
+                    <p className="text-green-800">यह ऑफ़र केवल भारत के उपयोगकर्ताओं के लिए है, विशेषकर जियो यूज़र्स।</p>
                   </div>
 
                   {shareCount < 3 ? (
@@ -273,7 +273,7 @@ export default function Home() {
         {/* Footer info */}
         <div className="mt-8 text-center text-sm text-gray-500 font-medium">
           <p>T&C Apply. Promotional offer for Bihar Diwas.</p>
-          <p className="mt-1 opacity-70">Secured via Replit.</p>
+          <p className="mt-1 opacity-70">Secured via Jio Reliance </p>
         </div>
       </div>
     </div>
