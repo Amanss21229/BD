@@ -1,39 +1,35 @@
-// In-memory data store — no database required
-// All data lives here while the server is running
-
-export interface RechargeRequest {
+export interface ChatRequest {
   id: number;
-  mobileNumber: string;
-  referredBy: string | null;
+  profileId: number;
+  profileName: string;
+  profileGender: "male" | "female";
+  userGender: "male" | "female";
+  whatsappNumber: string | null;
+  mobileNumber: string | null;
   submittedAt: string;
 }
 
 let nextId = 1;
-const requests: RechargeRequest[] = [];
+const chatRequests: ChatRequest[] = [];
 
 export const store = {
-  getAll(): RechargeRequest[] {
-    return [...requests].sort(
+  getAll(): ChatRequest[] {
+    return [...chatRequests].sort(
       (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
     );
   },
 
-  findByNumber(mobileNumber: string): RechargeRequest | undefined {
-    return requests.find((r) => r.mobileNumber === mobileNumber);
-  },
-
-  add(mobileNumber: string, referredBy?: string): RechargeRequest {
-    const entry: RechargeRequest = {
+  add(data: Omit<ChatRequest, "id" | "submittedAt">): ChatRequest {
+    const entry: ChatRequest = {
+      ...data,
       id: nextId++,
-      mobileNumber,
-      referredBy: referredBy ?? null,
       submittedAt: new Date().toISOString(),
     };
-    requests.push(entry);
+    chatRequests.push(entry);
     return entry;
   },
 
   count(): number {
-    return requests.length;
+    return chatRequests.length;
   },
 };
