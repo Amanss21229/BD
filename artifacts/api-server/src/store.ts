@@ -9,8 +9,22 @@ export interface ChatRequest {
   submittedAt: string;
 }
 
-let nextId = 1;
+export interface CustomProfile {
+  id: number;
+  name: string;
+  age: number;
+  city: string;
+  gender: "male" | "female";
+  bio: string;
+  photos: string[];
+  addedAt: string;
+}
+
+let nextChatId = 1;
 const chatRequests: ChatRequest[] = [];
+
+let nextProfileId = 201;
+const customProfiles: CustomProfile[] = [];
 
 export const store = {
   getAll(): ChatRequest[] {
@@ -22,7 +36,7 @@ export const store = {
   add(data: Omit<ChatRequest, "id" | "submittedAt">): ChatRequest {
     const entry: ChatRequest = {
       ...data,
-      id: nextId++,
+      id: nextChatId++,
       submittedAt: new Date().toISOString(),
     };
     chatRequests.push(entry);
@@ -31,5 +45,21 @@ export const store = {
 
   count(): number {
     return chatRequests.length;
+  },
+};
+
+export const profileStore = {
+  getAll(): CustomProfile[] {
+    return [...customProfiles];
+  },
+
+  add(data: Omit<CustomProfile, "id" | "addedAt">): CustomProfile {
+    const entry: CustomProfile = {
+      ...data,
+      id: nextProfileId++,
+      addedAt: new Date().toISOString(),
+    };
+    customProfiles.push(entry);
+    return entry;
   },
 };

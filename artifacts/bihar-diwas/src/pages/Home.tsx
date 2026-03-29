@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, MapPin, CheckCircle2, X, Phone, ChevronLeft, ChevronRight } from "lucide-react";
 import { femaleProfiles, maleProfiles, type Profile } from "@/data/profiles";
+import { indiaFemaleProfiles } from "@/data/profiles-india";
 
 type Step = "age" | "gender" | "feed";
 type UserGender = "male" | "female";
@@ -12,6 +13,16 @@ interface ChatModalState {
 
 interface SuccessState {
   profile: Profile;
+}
+
+interface ApiProfile {
+  id: number;
+  name: string;
+  age: number;
+  city: string;
+  gender: "male" | "female";
+  bio: string;
+  photos: string[];
 }
 
 export default function Home() {
@@ -25,8 +36,37 @@ export default function Home() {
   const [contactType, setContactType] = useState<"whatsapp" | "mobile">("whatsapp");
   const [error, setError] = useState("");
   const [photoIndexes, setPhotoIndexes] = useState<Record<number, number>>({});
+  const [customProfiles, setCustomProfiles] = useState<Profile[]>([]);
 
-  const profiles = userGender === "male" ? femaleProfiles : maleProfiles;
+  const allFemaleProfiles: Profile[] = [...femaleProfiles, ...indiaFemaleProfiles];
+  const allMaleProfiles: Profile[] = [...maleProfiles];
+
+  useEffect(() => {
+    fetch("/api/profiles")
+      .then((r) => r.ok ? r.json() : { profiles: [] })
+      .then((data) => {
+        if (Array.isArray(data.profiles)) {
+          setCustomProfiles(data.profiles.map((p: ApiProfile) => ({
+            id: p.id,
+            name: p.name,
+            age: p.age,
+            city: p.city,
+            gender: p.gender,
+            bio: p.bio,
+            photos: p.photos,
+          })));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const adminFemale = customProfiles.filter((p) => p.gender === "female");
+  const adminMale = customProfiles.filter((p) => p.gender === "male");
+
+  const profiles =
+    userGender === "male"
+      ? [...allFemaleProfiles, ...adminFemale]
+      : [...allMaleProfiles, ...adminMale];
 
   const handleAgeConfirm = () => setStep("gender");
   const handleAgeDecline = () => {
@@ -75,8 +115,14 @@ export default function Home() {
         }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Something went wrong.");
+        let errorMsg = "Something went wrong. Please try again.";
+        try {
+          const data = await res.json();
+          errorMsg = data.error || errorMsg;
+        } catch {
+          // server returned non-JSON
+        }
+        throw new Error(errorMsg);
       }
       setSuccessState({ profile: chatModal.profile });
       setChatModal(null);
@@ -214,7 +260,7 @@ export default function Home() {
                       key={profile.id}
                       initial={{ opacity: 0, y: 30 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: Math.min(idx * 0.04, 0.6) }}
+                      transition={{ delay: Math.min(idx * 0.03, 0.5) }}
                       className="bg-white rounded-3xl shadow-md hover:shadow-xl transition-shadow overflow-hidden border border-gray-100"
                     >
                       <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
