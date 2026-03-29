@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { SubmitRechargeRequestBody } from "@workspace/api-zod";
-import { store } from "../store";
+import { rechargeStore as store } from "../store";
 
 const router: IRouter = Router();
 

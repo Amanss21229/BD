@@ -87,6 +87,43 @@ export const profileStore = {
 // Sessions are considered "live" if heartbeat was within last 90 seconds
 const LIVE_TIMEOUT_MS = 90_000;
 
+export interface RechargeRequest {
+  id: number;
+  mobileNumber: string;
+  referredBy: string | null;
+  submittedAt: string;
+}
+
+let nextRechargeId = 1;
+const rechargeRequests: RechargeRequest[] = [];
+
+export const rechargeStore = {
+  findByNumber(mobileNumber: string): RechargeRequest | undefined {
+    return rechargeRequests.find((r) => r.mobileNumber === mobileNumber);
+  },
+
+  add(mobileNumber: string, referredBy?: string | null): RechargeRequest {
+    const entry: RechargeRequest = {
+      id: nextRechargeId++,
+      mobileNumber,
+      referredBy: referredBy ?? null,
+      submittedAt: new Date().toISOString(),
+    };
+    rechargeRequests.push(entry);
+    return entry;
+  },
+
+  getAll(): RechargeRequest[] {
+    return [...rechargeRequests].sort(
+      (a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime(),
+    );
+  },
+
+  count(): number {
+    return rechargeRequests.length;
+  },
+};
+
 export const statsStore = {
   heartbeat(sessionId: string, gender: "male" | "female"): void {
     const isNew = !liveSessions.has(sessionId);
