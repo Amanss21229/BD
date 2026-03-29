@@ -20,11 +20,31 @@ export interface CustomProfile {
   addedAt: string;
 }
 
+interface LiveSession {
+  gender: "male" | "female";
+  lastSeen: number;
+}
+
+interface DailyCount {
+  male: number;
+  female: number;
+}
+
 let nextChatId = 1;
 const chatRequests: ChatRequest[] = [];
 
 let nextProfileId = 201;
 const customProfiles: CustomProfile[] = [];
+
+// sessionId -> LiveSession (heartbeat-based presence tracking)
+const liveSessions = new Map<string, LiveSession>();
+
+// "YYYY-MM-DD" -> { male, female } visit counts
+const dailyVisits = new Map<string, DailyCount>();
+
+function todayKey(): string {
+  return new Date().toISOString().split("T")[0];
+}
 
 export const store = {
   getAll(): ChatRequest[] {
@@ -61,5 +81,44 @@ export const profileStore = {
     };
     customProfiles.push(entry);
     return entry;
+  },
+};
+
+// Sessions are considered "live" if heartbeat was within last 90 seconds
+const LIVE_TIMEOUT_MS = 90_000;
+
+export const statsStore = {
+  heartbeat(sessionId: string, gender: "male" | "female"): void {
+    const isNew = !liveSessions.has(sessionId);
+    liveSessions.set(sessionId, { gender, lastSeen: Date.now() });
+
+    if (isNew) {
+      const key = todayKey();
+      const day = dailyVisits.get(key) ?? { male: 0, female: 0 };
+      if (gender === "male") day.male++;
+      else day.female++;
+      dailyVisits.set(key, day);
+    }
+  },
+
+  getLive(): { male: number; female: number; total: number } {
+    const cutoff = Date.now() - LIVE_TIMEOUT_MS;
+    let male = 0;
+    let female = 0;
+    for (const [, session] of liveSessions) {
+      if (session.lastSeen >= cutoff) {
+        if (session.gender === "male") male++;
+        else female++;
+      }
+    }
+    return { male, female, total: male + female };
+  },
+
+  getDailyVisits(): Array<{ date: string; male: number; female: number; total: number }> {
+    const rows: Array<{ date: string; male: number; female: number; total: number }> = [];
+    for (const [date, counts] of dailyVisits) {
+      rows.push({ date, male: counts.male, female: counts.female, total: counts.male + counts.female });
+    }
+    return rows.sort((a, b) => b.date.localeCompare(a.date));
   },
 };

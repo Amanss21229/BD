@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, MessageCircle, Share2, MapPin, CheckCircle2, X, Phone, ChevronLeft, ChevronRight } from "lucide-react";
 import { femaleProfiles, maleProfiles, type Profile } from "@/data/profiles";
@@ -37,6 +37,7 @@ export default function Home() {
   const [error, setError] = useState("");
   const [photoIndexes, setPhotoIndexes] = useState<Record<number, number>>({});
   const [customProfiles, setCustomProfiles] = useState<Profile[]>([]);
+  const sessionId = useRef<string>(Math.random().toString(36).slice(2) + Date.now().toString(36));
 
   const allFemaleProfiles: Profile[] = [...femaleProfiles, ...indiaFemaleProfiles];
   const allMaleProfiles: Profile[] = [...maleProfiles];
@@ -59,6 +60,20 @@ export default function Home() {
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (step !== "feed" || !userGender) return;
+    const ping = () => {
+      fetch("/api/stats/heartbeat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: sessionId.current, gender: userGender }),
+      }).catch(() => {});
+    };
+    ping();
+    const interval = setInterval(ping, 30_000);
+    return () => clearInterval(interval);
+  }, [step, userGender]);
 
   const adminFemale = customProfiles.filter((p) => p.gender === "female");
   const adminMale = customProfiles.filter((p) => p.gender === "male");

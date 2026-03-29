@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Lock, Shield, Heart, Download, RefreshCw, LogOut, Loader2, MessageCircle, UserPlus, Upload, X, CheckCircle2 } from "lucide-react";
+import { Lock, Shield, Heart, Download, RefreshCw, LogOut, Loader2, MessageCircle, UserPlus, Upload, X, CheckCircle2, BarChart3, Users, CalendarDays } from "lucide-react";
 
 interface ChatRequest {
   id: number;
@@ -26,6 +26,24 @@ interface UploadForm {
   photo: string;
 }
 
+interface LiveStats {
+  male: number;
+  female: number;
+  total: number;
+}
+
+interface DailyVisit {
+  date: string;
+  male: number;
+  female: number;
+  total: number;
+}
+
+interface StatsData {
+  live: LiveStats;
+  dailyVisits: DailyVisit[];
+}
+
 const emptyForm: UploadForm = { name: "", age: "", city: "", gender: "female", bio: "", photo: "" };
 
 export default function Admin() {
@@ -35,7 +53,9 @@ export default function Admin() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [activeTab, setActiveTab] = useState<"requests" | "upload">("requests");
+  const [activeTab, setActiveTab] = useState<"requests" | "upload" | "stats">("requests");
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
   const [uploadForm, setUploadForm] = useState<UploadForm>(emptyForm);
   const [uploadError, setUploadError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState(false);
@@ -81,11 +101,32 @@ export default function Admin() {
     }
   };
 
+  const fetchStats = async (pw: string) => {
+    setStatsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/stats?password=${encodeURIComponent(pw)}`);
+      if (!res.ok) return;
+      const json = await res.json();
+      setStatsData(json);
+    } catch {
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!authedPassword || activeTab !== "stats") return;
+    fetchStats(authedPassword);
+    const interval = setInterval(() => fetchStats(authedPassword!), 30_000);
+    return () => clearInterval(interval);
+  }, [authedPassword, activeTab]);
+
   const handleLogout = () => {
     setAuthedPassword(null);
     setPassword("");
     setData(null);
     setError("");
+    setStatsData(null);
     setUploadForm(emptyForm);
     setPhotoPreview("");
     setUploadSuccess(false);
@@ -234,6 +275,13 @@ export default function Admin() {
           >
             <UserPlus className="w-4 h-4" />
             Upload Profile
+          </button>
+          <button
+            onClick={() => setActiveTab("stats")}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold border-b-2 transition-all -mb-px ${activeTab === "stats" ? "border-pink-500 text-pink-600" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+          >
+            <BarChart3 className="w-4 h-4" />
+            Live Stats
           </button>
         </div>
 
@@ -455,6 +503,123 @@ export default function Admin() {
                 {isUploading ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Upload className="w-5 h-5" /> Upload Profile</>}
               </button>
             </form>
+          </div>
+        )}
+
+        {activeTab === "stats" && (
+          <div>
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                  <BarChart3 className="w-6 h-6 text-pink-500" />
+                  Live Stats
+                </h1>
+                <p className="text-gray-500 mt-1">Auto-refreshes every 30 seconds</p>
+              </div>
+              <button
+                onClick={() => authedPassword && fetchStats(authedPassword)}
+                disabled={statsLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${statsLoading ? "animate-spin" : ""}`} />
+                Refresh
+              </button>
+            </div>
+
+            {statsLoading && !statsData ? (
+              <div className="py-20 flex flex-col items-center justify-center text-gray-400">
+                <Loader2 className="w-8 h-8 animate-spin mb-4 text-pink-500" />
+                <p>Loading stats...</p>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex items-center gap-5"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-3xl shrink-0">👨</div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-500 mb-0.5">Boys Live Now</p>
+                      <p className="text-4xl font-bold text-blue-600">{statsData?.live.male ?? 0}</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
+                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex items-center gap-5"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-pink-50 flex items-center justify-center text-3xl shrink-0">👩</div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-500 mb-0.5">Girls Live Now</p>
+                      <p className="text-4xl font-bold text-pink-600">{statsData?.live.female ?? 0}</p>
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 flex items-center gap-5"
+                  >
+                    <div className="w-14 h-14 rounded-2xl bg-rose-50 flex items-center justify-center shrink-0">
+                      <Users className="w-7 h-7 text-rose-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-500 mb-0.5">Total Live</p>
+                      <p className="text-4xl font-bold text-rose-600">{statsData?.live.total ?? 0}</p>
+                    </div>
+                  </motion.div>
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                  <div className="px-6 py-4 border-b border-gray-100 flex items-center gap-2">
+                    <CalendarDays className="w-5 h-5 text-pink-500" />
+                    <h2 className="font-bold text-gray-800">Daily Visits</h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="bg-gray-50/80 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-4">Date</th>
+                          <th className="px-6 py-4">👨 Boys</th>
+                          <th className="px-6 py-4">👩 Girls</th>
+                          <th className="px-6 py-4">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {statsData?.dailyVisits.length ? (
+                          statsData.dailyVisits.map((row) => (
+                            <tr key={row.date} className="hover:bg-pink-50/20 transition-colors">
+                              <td className="px-6 py-4 font-semibold text-gray-800">
+                                {new Date(row.date).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-blue-600 font-bold text-lg">{row.male}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="text-pink-600 font-bold text-lg">{row.female}</span>
+                              </td>
+                              <td className="px-6 py-4">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-rose-100 text-rose-700 font-bold text-sm">
+                                  {row.total}
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan={4} className="px-6 py-14 text-center">
+                              <BarChart3 className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                              <p className="text-gray-400 font-medium">No visit data yet.</p>
+                              <p className="text-gray-400 text-sm mt-1">Data appears as users browse the app.</p>
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
