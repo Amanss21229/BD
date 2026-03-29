@@ -65,8 +65,8 @@ export default function Home() {
 
   const profiles =
     userGender === "male"
-      ? [...allFemaleProfiles, ...adminFemale]
-      : [...allMaleProfiles, ...adminMale];
+      ? [...adminFemale, ...allFemaleProfiles]
+      : [...adminMale, ...allMaleProfiles];
 
   const handleAgeConfirm = () => setStep("gender");
   const handleAgeDecline = () => {
